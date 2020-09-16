@@ -10,6 +10,7 @@ const mongoose = require('mongoose')
 const session = require('express-session')
 const flash = require('express-flash')
 const MongoDbStore = require('connect-mongo')(session)
+const passport = require('passport')
 
 const PORT = process.env.PORT || 3000
 
@@ -21,7 +22,11 @@ connection.once('open', () => {
     console.log('Database connected...');
 }).catch(err => {
     console.log('Connection failed...')
+
 });
+
+
+
 //session store
 let mongoStore = new MongoDbStore({
                 mongooseConnection: connection,
@@ -35,11 +40,17 @@ app.use(session({
     saveUninitialized: false, 
     cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 hour
 }))
+//passport config
+const passportInit = require('./app/config/passport.js')
+passportInit(passport)
+app.use(passport.initialize())
+app.use(passport.session())
 
 app.use(flash())
 //GlobalMiddleware
 app.use((req,res,next) =>{
 	res.locals.session = req.session
+	res.locals.user = req.user
 	next()
 
 })
@@ -47,10 +58,11 @@ app.use((req,res,next) =>{
 
 //set Template engine
 app.use(express.static(__dirname + '/public'));
-app.use(bodyParser.urlencoded({extended : true}));
+//app.use(bodyParser.urlencoded({extended : true}));
 app.use(methodOverride("_method"));
 app.use(expressLayout)
 app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
 app.set('views', path.join(__dirname, '/resources/views'))
 
 app.set('view engine','ejs')

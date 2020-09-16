@@ -17,7 +17,7 @@ function cartControllers (){
 
     		}
     		let cart = req.session.cart
-    		console.log(req.body)
+    		//console.log(req.body)
     		// check if the items is not availbe in cart
     		if(!cart.items[req.body._id]){
     			cart.items[req.body._id] ={
